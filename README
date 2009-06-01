@@ -1,0 +1,26 @@
+Collection of random scripts:
+    - matlab.sh
+        - wrapper script to check out matlab license using ssh port
+          forwarding. Particularly useful if you're license server is behind
+          a firewall.
+    - convert_files.py
+        - script for automatically converting files in a given directory using
+          handbrakecli
+        - Provides the following
+            - Convert file to preset format
+            - Move original file into a specified archive directory
+            - logs handbrake output to file. you can use tail to see progress
+        - Status: Rough, needs work. Gets the job done
+    - ip_notify.py
+        - Script that detects a change in ip and sends notification email to
+          specified addy. Great keeping up with dynamic ip's.
+    - mfind.py
+        - Quick search script for binsearc.info. Takes a string as an arg and
+          searches binsearc.info for a match with appropriate filters for a
+          full dvd.
+    - post_hellanzb.py
+        - Helper post filtering script for hellanzb, detects bad downloads and
+          creates a FAILED_DOWNLOADS directory in the hell download
+          destination.
+    - backuppc_config_template.rb
+        - Script that automatically sets up an OSX client for backuppc
