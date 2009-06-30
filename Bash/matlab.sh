@@ -31,18 +31,18 @@
 #
 #   Where $OPTS = "-nojvm -nosplash -nodesktop"
 
-user='username'
-license_port=2700
-daemon_port=<set daemon port here>
+user=`id -u -n`
+license_port=27010
+daemon_port=51916
 
-license_server=license.server.com
-forward_server=server.com
+license_server=lm-sge
+forward_server=hoffman2.idre.ucla.edu
 
 SSH=/usr/bin/ssh
 OPTS=$@
 
 if [ -z "$MATLAB" ]; then
-  MATLAB=/usr/bin/matlab
+  MATLAB=/Applications/MATLAB_R2009a.app/bin/matlab
 fi
 
 if [ -z "$user" ];then
@@ -53,6 +53,7 @@ fi
 $SSH -l $user -L $license_port:$license_server:$license_port -f $forward_server -N
 $SSH -l $user -L $daemon_port:$license_server:$daemon_port -f $forward_server -N
 
+
 $MATLAB -c $license_port@localhost $OPTS
 
 pid1=`ps x | grep -v grep | grep "$license_port:$license_server:$license_port" | awk '{print $1}'`
@@ -60,4 +61,3 @@ pid1=`ps x | grep -v grep | grep "$license_port:$license_server:$license_port" |
 pid2=`ps x | grep -v grep | grep "$daemon_port:$license_server:$daemon_port" | awk '{print $1}'`
 
 kill $pid1 $pid2
-
