@@ -31,7 +31,7 @@
 #
 #   Where $OPTS = "-nojvm -nosplash -nodesktop"
 
-user='username'
+user=`id -u -n`
 license_port=2700
 daemon_port=<set daemon port here>
 
