@@ -2,7 +2,8 @@
 # matlab.sh
 #   Matlab wrapper script for checking out a license from behind a firewall.
 #
-#   user:           username needed for ssh login
+#   MAT_USER:       username needed for ssh login. Can be set as an
+#                   environment variable
 #
 #   license_port:   the port that the license manager receives requests from.
 #                   Default: 2700
@@ -30,28 +31,38 @@
 #   $ $MATLAB -c $license_port@localhost $OPTS
 #
 #   Where $OPTS = "-nojvm -nosplash -nodesktop"
+#
+#   Since multiple ssh logins are required, it is highly adviseable that you
+#   use public/private keys to minimize password entry tedium.
 
-user='username'
-license_port=2700
-daemon_port=<set daemon port here>
+license_port=<license port>
+daemon_port=<daemon port>
 
-license_server=license.server.com
-forward_server=server.com
+license_server=<license server>
+forward_server=<forward server>
 
 SSH=/usr/bin/ssh
 OPTS=$@
 
 if [ -z "$MATLAB" ]; then
-  MATLAB=/usr/bin/matlab
+  if [[ ! -e /usr/bin/matlab ]]; then
+    echo "Matlab could not be found"
+    echo "Please provide the path to the matlab binary: "
+    read MATLAB
+  else
+    MATLAB=/usr/bin/matlab
+  fi
 fi
 
-if [ -z "$user" ];then
-  echo "Please enter your username: "
-  read user
+if [ -z "$MAT_USER" ];then
+  echo "**You may wish to permanently set your matlab username with the"
+  echo "MAT_USER environment variable.**"
+  echo "Please enter your hoffman username: "
+  read MAT_USER
 fi
 
-$SSH -l $user -L $license_port:$license_server:$license_port -f $forward_server -N
-$SSH -l $user -L $daemon_port:$license_server:$daemon_port -f $forward_server -N
+$SSH -l $MAT_USER -L $license_port:$license_server:$license_port -f $forward_server -N
+$SSH -l $MAT_USER -L $daemon_port:$license_server:$daemon_port -f $forward_server -N
 
 $MATLAB -c $license_port@localhost $OPTS
 
