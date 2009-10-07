@@ -35,8 +35,8 @@
 #   Since multiple ssh logins are required, it is highly adviseable that you
 #   use public/private keys to minimize password entry tedium.
 
-license_port=<license port>
-daemon_port=<daemon port>
+license_port=2700
+daemon_port=<set daemon port here>
 
 license_server=<license server>
 forward_server=<forward server>
