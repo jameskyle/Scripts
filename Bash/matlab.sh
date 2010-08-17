@@ -2,7 +2,8 @@
 # matlab.sh
 #   Matlab wrapper script for checking out a license from behind a firewall.
 #
-#   user:           username needed for ssh login
+#   MAT_USER:       username needed for ssh login. Can be set as an
+#                   environment variable
 #
 #   license_port:   the port that the license manager receives requests from.
 #                   Default: 2700
@@ -30,34 +31,100 @@
 #   $ $MATLAB -c $license_port@localhost $OPTS
 #
 #   Where $OPTS = "-nojvm -nosplash -nodesktop"
-
-user=`id -u -n`
+#
+#   Since multiple ssh logins are required, it is highly adviseable that you
+#   use public/private keys to minimize password entry tedium.
 license_port=27010
 daemon_port=51916
 
 license_server=lm-sge
-forward_server=hoffman2.idre.ucla.edu
-
+forward_server=hoffman
+ 
+ 
+#set path for group check script. set to empty string to disable
+check_user=/u/home9/FMRI/apps/usr/bin/check_matuser.sh
+group_name=mscohen
+local_user=jkyle
+support_email="support@ccn.ucla.edu"
+ 
 SSH=/usr/bin/ssh
 OPTS=$@
-
-if [ -z "$MATLAB" ]; then
-  MATLAB=/Applications/MATLAB_R2009a.app/bin/matlab
-fi
-
-if [ -z "$user" ];then
-  echo "Please enter your username: "
-  read user
-fi
-
-$SSH -l $user -L $license_port:$license_server:$license_port -f $forward_server -N
-$SSH -l $user -L $daemon_port:$license_server:$daemon_port -f $forward_server -N
-
-
-$MATLAB -c $license_port@localhost $OPTS
-
-pid1=`ps x | grep -v grep | grep "$license_port:$license_server:$license_port" | awk '{print $1}'`
-
-pid2=`ps x | grep -v grep | grep "$daemon_port:$license_server:$daemon_port" | awk '{print $1}'`
-
-kill $pid1 $pid2
+ 
+function send_request() {
+  local_user=$1
+  echo "Please enter your email address: "
+  read email_address
+  echo "Please enter your full name: "
+  read full_name
+  echo "Please enter your hoffman username: "
+  read hoff_user
+  echo "Please enter your hoffman sponsor's name (e.g. mark cohen): "
+  read sponsor
+ 
+  email="$full_name would like to request that his local account, $local_user, be added to the fmri matlab group.\n\nFull Name: $full_name\nLocal User Name: $local_user\nHoffman User: $hoff_user\nSponsor: $sponsor\n"
+ 
+echo -e $email | mail -s "Request for fmri matlab group addition" $support_email -F "$full_name" -f "$email_address"
+ 
+echo "A support email request has been sent on your behalf, this session of matlab will use a general license."
+ 
+ 
+}
+function main() {
+ 
+ 
+  if [ -z "$MATLAB" ]; then
+    if [[ ! -e /usr/bin/matlab ]]; then
+      echo "Matlab could not be found"
+      echo "Please provide the path to the matlab binary: "
+      read MATLAB
+    else
+      MATLAB=/usr/bin/matlab
+    fi
+  fi
+ 
+  if [ -z "$MAT_USER" ];then
+    echo "**You may wish to permanently set your matlab username with the"
+    echo "MAT_USER environment variable.**"
+    echo "Please enter your hoffman username: "
+    read MAT_USER
+  fi
+ 
+  # First we check to see if the user is a member of a specific group
+  # this is useful if certain matlab groups have elevated access to toolboxes or
+  # licenses. This requires the writing of a server side script thatis given
+  # a username as an argument and returns 'found' on success.
+ 
+  # If the user is the member of the group, a message is displayed. If they are
+  # not, they are notified and asked if they wish to apply for membership.
+  if [[ -n $check_user ]]; then
+    found=`$SSH -l $MAT_USER $forward_server $check_user $local_user`
+ 
+    if [[ $found == "found" ]]; then
+      echo "User found in $group_name list"
+ 
+    else
+      echo "Could not find your user in $group list!"
+      echo "Would you like to request to have this username ($local_user) added"
+      echo "to the $group list? [y,n]"
+      read answer
+ 
+      if [[ $answer == "y" ]]; then
+        send_request $local_user
+      fi
+    fi
+  fi
+ 
+  $SSH -l $MAT_USER -L $license_port:$license_server:$license_port -f $forward_server -N
+  $SSH -l $MAT_USER -L $daemon_port:$license_server:$daemon_port -f $forward_server -N
+ 
+  $MATLAB -c $license_port@localhost $OPTS
+ 
+  pid1=`ps x | grep -v grep | grep "$license_port:$license_server:$license_port" | awk '{print $1}'`
+ 
+  pid2=`ps x | grep -v grep | grep "$daemon_port:$license_server:$daemon_port" | awk '{print $1}'`
+ 
+  kill $pid1 $pid2
+ 
+}
+ 
+main
