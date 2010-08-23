@@ -56,9 +56,9 @@ function send_request() {
   read email_address
   echo "Please enter your full name: "
   read full_name
-  echo "Please enter your hoffman username: "
+  echo "Please enter your cluster username: "
   read hoff_user
-  echo "Please enter your hoffman sponsor's name (e.g. mark cohen): "
+  echo "Please enter your cluster sponsor's name: "
   read sponsor
  
   email="$full_name would like to request that his local account, $local_user, be added to the fmri matlab group.\n\nFull Name: $full_name\nLocal User Name: $local_user\nHoffman User: $hoff_user\nSponsor: $sponsor\n"
@@ -85,7 +85,7 @@ function main() {
   if [ -z "$MAT_USER" ];then
     echo "**You may wish to permanently set your matlab username with the"
     echo "MAT_USER environment variable.**"
-    echo "Please enter your hoffman username: "
+    echo "Please enter your cluster username: "
     read MAT_USER
   fi
  
