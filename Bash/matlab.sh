@@ -34,19 +34,19 @@
 #
 #   Since multiple ssh logins are required, it is highly adviseable that you
 #   use public/private keys to minimize password entry tedium.
-user=`id -u -n`
 license_port=2700
 daemon_port=<set daemon port here>
 
-license_server=license.server.com
-forward_server=server.com
- 
+license_server=<license server>
+forward_server=<forward server>
+
+
 #set path for group check script. set to empty string to disable
-check_user=$path_to_checkscript/bin/check_matuser.sh
-group_name=your_group
-local_user=`id -u -n`
-support_email="support@foo.com"
- 
+check_user=<path to server side group check script>
+group_name="your matlab group name"
+local_user=`id -un`
+support_email="yoursupport@yourdomain.com"
+
 SSH=/usr/bin/ssh
 OPTS=$@
  
