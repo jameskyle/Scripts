@@ -1,0 +1,144 @@
+#compdef networksetup
+
+# J. A. Kyle
+# March 05 2009
+
+_networksetup_hardwareport_name() {
+  local line
+  
+  if [[ -z "$_hardwareport_names" ]]; then
+    _hardwareport_names=()
+    
+    for line in ${(f)"$(_call_program pkgs networksetup -listallhardwareports)"}; do
+      if [[ $line == 'Hardware Port: '* ]]; then
+        _hardwareport_names+=("${line#Hardware Port: }")
+      fi  
+    done
+  fi
+
+  if (( ${#_hardwareport_names} > 0 )); then
+    _describe -t pkgs "port name" _hardwareport_names && return 0
+  fi
+  
+  return 1
+}
+
+_networksetup_networkservice_name() {
+  local line
+
+  if [[ -z "$_networkservice_names" ]]; then
+    _networkservice_names=()
+  
+    for line in ${(f)"$(_call_program pkgs networksetup -listallnetworkservices)"}; do
+      if [[ $line != 'An asterisk '* ]]; then
+        _networkservice_names+=("${line}")
+      fi
+    done
+  fi
+
+  if (( ${#_networkservice_names} > 0 )); then
+    _describe -t pkgs "network service name" _networkservice_names && return 0
+  fi
+
+  return 1
+}
+
+_networksetup() {
+  local context state line expl
+  local -A opt_args
+
+  _arguments \
+    '-listnetworkserviceorder'' [Display services with corresponding port and device.]' \
+    '-listallnetworkservices [Display list of services. (*) denotes disabled service.]' \
+    '-listallhardwareports [Display list of hardware ports with corresponding device name and ethernet address.]' \
+    '-detectnewhardware [Detect new network hardware and create a default network service on the hardware.]'\
+    '-getmacaddress+[Display address for hardwarereport|device specified.]:hardwareport:_networksetup_hardwareport_name'\
+    '-getcomputername [Display the computer name.]'\
+    '-setcomputername+[Set the computers name (if valid) to <name>.]:computername'\
+    '-getinfo+[Display information for  <service>.]:network service name:_networksetup_networkservice_name'\
+    '-setmanual+[Set the <service> TCP/IP configuration to manual with specified settings.]:network service:_networksetup_networkservice_name:new ip::subnet::router'\
+    '-setdhcp+[Set the <service> TCP/IP configuration to DHCP.]:network service:_networksetup_networkservice_name:clientid or "Empty" to clear:'\
+    '-setbootp+[Set the <service> TCP/IP configuration to BOOTP.]:network service:_networksetup_networkservice_name'\
+    '-setmanualwithdhcprouter+[Set the <service> to manual with DHCP router <ip>.]:network service:_networksetup_networkservice_name'\
+    '-setv4off+[Turn IPv4 off on <service>.]:network service:_networksetup_networkservice_name'\
+    '-setv6off+[Turn IPv6 off on <service>.]:network service:_networksetup_networkservice_name'\
+    '-setv6automatic+[Set the service to get its IPv6 info automatically.]:network service:_networksetup_networkservice_name'\
+    '-setv6manual+[Set the service to get its IPv6 info manually.]:ip::prefixlength::router'\
+    '-getdnsservers [Display DNS info for <service>.]'\
+    '-setdnsservers [Set the <service> DNS servers to <dns1><dns2><...>.]'\
+    '-getsearchdomains [Display Domain Name info for <service>.]'\
+    '-setsearchdomains [Set the <service> Domain Name servers to <domain1w <domain2><...>.]'\
+    '-create6to4service [Create a 6 to 4 service with name <newservicename>.]'\
+    '-set6to4automatic [Set the service to get its 6 to 4 info automatically.]'\
+    '-set6to4manual [Set the service to get its 6 to 4 info manually.]'\
+    '-getftpproxy [Display FTP proxy (server, port, enabled value) info for <service>.]'\
+    '-setftpproxy [Set FTP proxy for <service> with <domain> and <port number>.]'\
+    '-setftpproxystate [Set FTP proxy to either <on> or <off>.]'\
+    '-getwebproxy [Display Web proxy (server, port, enabled value) info for <service>.]'\
+    '-setwebproxy [Set Web proxy for <service> with <domain> and <port number>.]'\
+    '-setwebproxystate [Set Web proxy to either <on> or <off>.]'\
+    '-getsecurewebproxy [Display Secure Web proxy info for <service>.]'\
+    '-setsecurewebproxy [Set Secure Web proxy for <service> with <domain> and <port number>.]'\
+    '-setsecurewebproxystate [Set SecureWeb proxy to either <on> or <off>.]'\
+    '-getstreamingproxy [Display Streaming proxy (server, port, enabled value) info for <service>.]'\
+    '-setstreamingproxy [Set Streaming proxy for <service> with <domain> and <port number>.]'\
+    '-setstreamingproxystate [Set Streaming proxy to either <on> or <off>.]'\
+    '-getgopherproxy [Display Gopher proxy (server, port, enabled value) info for <service>.]'\
+    '-setgopherproxy [Set Gopher proxy for <service> with <domain> and <port number>.]'\
+    '-setgopherproxystate [Set Gopher proxy to either <on> or <off>.]'\
+    '-getsocksfirewallproxy [Display SOCKS Firewall proxy (server, port, enabled value) info for <service>.]'\
+    '-setsocksfirewallproxy [Set SOCKS Firewall proxy for service.]'\
+    '-setsocksfirewallproxystate [Set SOCKS Firewall proxy to either <on> or <off>.]'\
+    '-getproxybypassdomains [Display Bypass Domain Names for <service>.]'\
+    '-setproxybypassdomains [Set the Bypass Domain Name Servers for <service> to <domain1><domain2><...>.]'\
+    '-getpassiveftp [Display whether Passive FTP is on or off for <service>.]'\
+    '-setpassiveftp [Set Passive FTP to either <on> or <off>.]'\
+    '-setautoproxyurl [Set proxy auto-config to url for <service> and enable it.]'\
+    '-getautoproxyurl [Display proxy auto-config (url, enabled) info for <service>.]'\
+    '-setautoproxystate [Set proxy auto-config to either <on> or <off>.]'\
+    '-getairportnetwork [Display current AirPort Network.]'\
+    '-setairportnetwork [Set AirPort Network to <network> using optional <password> if specified.]'\
+    '-getairportpower [Display whether AirPort power is on or off.]'\
+    '-setairportpower [Set AirPort power to either <on> or <off>.]'\
+    '-getnetworkserviceenabled [Display whether a service is on or off (enabled or disabled).]'\
+    '-setnetworkserviceenabled [Set <service> to either <on> or <off> (enabled or disabled).]'\
+    '-createnetworkservice [Create a service named <service> on port <hardwareport>.]'\
+    '-renamenetworkservice [Rename <service> to <newservicename>.]'\
+    '-duplicatenetworkservice [Duplicate <service> and name it with <newservicename>.]'\
+    '-removenetworkservice [Remove the service named <service>.]'\
+    '-ordernetworkservices [Order the services in order specified.]'\
+    '-getappletalk [Display whether AppleTalk is on or off (enabled or disabled) on <service>.]'\
+    '-setappletalk [Set AppleTalk to either <on> or <off> (enabled or disabled) on <service>.]'\
+    '-setMTUAndMediaAutomatically [Set hardwareport or device specified back to automatically setting the MTU and Media.]'\
+    '-getMTU [Get the MTU value for hardwareport or device specified.]'\
+    '-setMTU [Set MTU for hardwareport or device specified.]'\
+    '-listvalidMTUrange [List the valid MTU range for hardwareport or device specified.]'\
+    '-getmedia [Show both the current setting for media and the active media on hardwareport or device specified.]'\
+    '-setmedia [Set media for hardwareport or device specified to subtype.]'\
+    '-listvalidmediaName> [List valid media options for hardwareport or device name.]'\
+    '-createVLAN [Create a VLAN with name <VLAN name> over device <device name> with unique tag <tag>.]'\
+    '-deleteVLAN [Delete the VLAN with name <vlan> over the parent device <device> with unique tag <tag>.]'\
+    '-listVLANs [List the VLANs that have been created.]'\
+    '-listdevicesthatsupportVLAN [List the devices that support VLANs.]'\
+    '-isBondSupported [Return YES if the specified device can be added to a bond. NO if it cannot.]'\
+    '-createBond [Create a new bond and give it the user defined name.]'\
+    '-deleteBond [Delete the bond with the specified device-name.]'\
+    '-addDeviceToBond [Add the specified device to the specified bond.]'\
+    '-removeDeviceFromBond [Remove the specified device from the specified bond]'\
+    '-listBonds [List all of the bonds.]'\
+    '-showBondStatus [Display the status of the specified bond.]'\
+    '-listpppoeservices [List all of the PPPoE services in the current set.]'\
+    '-showpppoestatus [Display the status of the specified PPPoE service.]'\
+    '-createpppoeservice [Create a PPPoE service on the specified device.]'\
+    '-deletepppoeservice [Delete the PPPoE service.]'\
+    '-setpppoeaccountname [Sets the account name for the specified service.]'\
+    '-setpppoepassword [Sets the password stored in the keychain for the specified service.]'\
+    '-connectpppoeservice [Connect the PPPoE service.]'\
+    '-disconnectpppoeservice [Disconnect the PPPoE service.]'\
+    '-version [Display version of networksetup tool.]'\
+    '-help [Display these help listings.]'\
+    '-printcommands [Displays a quick listing of commands (without explanations).]'
+
+}
+
+_networksetup '$@'
