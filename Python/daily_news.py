@@ -22,19 +22,20 @@ FEEDS = [
 ]
 
 # Additional configuration. Normally no need to edit any of these
-LOG_DEBUG_LEVEL  = logging.INFO
-LOG_FILENAME     = "/var/log/daily_news.log"
-LOG_MAX_BYTES    = 100000
-LOG_BACKUP_COUNT = 5
-LOG_FORMAT       = "%(asctime)s - %(levelname)s: %(message)s"
-LOG_DATE_FORMAT  = "%a, %d %b %Y %H:%M:%S"
-LOGGER_NAME      = "DailyNewsLOgger"
+LOG_DEBUG_LEVEL   = logging.INFO
+LOG_FILENAME      = "/var/log/daily_news.log"
+LOG_ARCHIVE_COUNT = 5
+LOG_INTERVAL      = 7 # in days
+LOG_FORMAT        = "%(asctime)s - %(levelname)s: %(message)s"
+LOG_DATE_FORMAT   = "%a, %d %b %Y %H:%M:%S"
+LOGGER_NAME       = "DailyNewsLOgger"
 
-logger           = logging.getLogger(LOGGER_NAME)
-formatter        = logging.Formatter(LOG_FORMAT, datefmt=LOG_DATE_FORMAT)
-file_handler     = logging.handlers.RotatingFileHandler(LOG_FILENAME,
-                                                 maxBytes=LOG_MAX_BYTES,
-                                                 backupCount=LOG_BACKUP_COUNT)
+logger            = logging.getLogger(LOGGER_NAME)
+formatter         = logging.Formatter(LOG_FORMAT, datefmt=LOG_DATE_FORMAT)
+handler = logging.handlers.TimedRotatingFileHandler(LOG_FILENAME,
+                                                    when='D',
+                                                    interval=LOG_INTERVAL,
+                                                    backupCount=LOG_ARCHIVE_COUNT)
 file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
 logger.setLevel(LOG_DEBUG_LEVEL)
