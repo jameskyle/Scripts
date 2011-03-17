@@ -53,7 +53,6 @@ def main():
     except Exception as e:
         logger.critical(e)        
             
-
 def send_mail(ip):
     msg = MIMEText("Your new ip: {0}".format(ip))
 
@@ -88,12 +87,15 @@ def get_ip():
     cmd = ["snmpwalk", "-v", "2c", "-c", SNMP_PASSWORD, ROUTER_IP,
            "ipAdEntIfIndex"]
     PIPE = subprocess.PIPE
-    p = subprocess.Popen(cmd, stdout=PIPE, stderr=PIPE)
-    ret = p.communicate()[0].strip()
-    lines = ret.split("\n")
-    
-    wans = filter(filter_ips, lines)
-    ip = wans[0].split("=")[0].split("IP-MIB::ipAdEntIfIndex.")[1].strip()
+    try:
+        p = subprocess.Popen(cmd, stdout=PIPE, stderr=PIPE)
+        ret = p.communicate()[0].strip()
+        lines = ret.split("\n")
+        
+        wans = filter(filter_ips, lines)
+        ip = wans[0].split("=")[0].split("IP-MIB::ipAdEntIfIndex.")[1].strip()
+    except:
+        raise Exception("Failed to retrive IP from router!")
     
     return ip
 
