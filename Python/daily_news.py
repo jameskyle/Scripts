@@ -8,6 +8,7 @@ from datetime import date
 import logging
 import logging.handlers
 
+
 # Enter your username and password for instapaper.com
 USERNAME = "InstaPaper Username"
 PASSWORD = "InstaPaper Password"
@@ -36,8 +37,8 @@ handler = logging.handlers.TimedRotatingFileHandler(LOG_FILENAME,
                                                     when='D',
                                                     interval=LOG_INTERVAL,
                                                     backupCount=LOG_ARCHIVE_COUNT)
-file_handler.setFormatter(formatter)
-logger.addHandler(file_handler)
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 logger.setLevel(LOG_DEBUG_LEVEL)
 
 def main():
